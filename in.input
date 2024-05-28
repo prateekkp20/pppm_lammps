@@ -1,0 +1,27 @@
+# input file to run the simulation
+package omp 12 
+units real
+dimension 3
+processors * * *
+boundary p p p # periodic boundary condition
+
+# read data 
+atom_style charge
+read_data poscar.data
+
+# potential file
+include pot.mod
+
+#outputs
+timer normal 
+thermo 1
+thermo_style custom step ecoul elong pe
+dump 2 all custom 1 md.lammpstrj type xs ys zs 
+write_data data.filename 
+compute e all pe pair
+
+# run one time
+fix 1 all nvt temp 5000 5000 1
+run 1
+unfix 1
+

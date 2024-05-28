@@ -1,0 +1,119 @@
+LAMMPS (29 Oct 2020)
+OMP_NUM_THREADS environment is not set. Defaulting to 1 thread. (src/comm.cpp:94)
+  using 1 OpenMP thread(s) per MPI task
+# input file to run the simulation
+package omp 12
+set 12 OpenMP thread(s) per MPI task
+using multi-threaded neighbor list subroutines
+units real
+dimension 3
+processors * * *
+boundary p p p # periodic boundary condition
+
+# read data
+atom_style charge
+read_data poscar.data
+Reading data file ...
+  orthogonal box = (0.0000000 0.0000000 0.0000000) to (25.000000 25.000000 25.000000)
+  1 by 1 by 1 MPI processor grid
+  reading atoms ...
+  200 atoms
+  reading velocities ...
+  200 velocities
+  read_data CPU = 0.001 seconds
+
+# potential file
+include pot.mod
+# potential
+pair_style coul/long 12.5
+pair_coeff * *
+
+# MD parameters
+# kspace_style ewald 1.0e-5
+kspace_style pppm 1.0e-5
+kspace_modify mesh 160 160 160
+kspace_modify gewald 0.2168
+# kspace_modify kmax/ewald 6 6 6
+neighbor 1.0 bin
+# neigh_modify once yes
+timestep 1.0
+
+#outputs
+timer normal
+New timer settings: style=normal  mode=nosync  timeout=off
+thermo 1
+thermo_style custom step ecoul elong pe
+dump 2 all custom 1 md.lammpstrj type xs ys zs
+write_data data.filename
+System init for write_data ...
+PPPM initialization ...
+  using 12-bit tables for long-range coulomb (src/kspace.cpp:328)
+  G vector (1/distance) = 0.2168
+  grid = 160 160 160
+  stencil order = 5
+  estimated absolute RMS force accuracy = 0.013737246
+  estimated relative force accuracy = 4.1369309e-05
+  using double precision FFTW3
+  3d grid and FFT values/proc = 5000211 4096000
+No /omp style for force computation currently active
+Neighbor list info ...
+  update every 1 steps, delay 10 steps, check yes
+  max neighbors/atom: 2000, page size: 100000
+  master list distance cutoff = 13.5
+  ghost atom cutoff = 13.5
+  binsize = 6.75, bins = 4 4 4
+  1 neighbor lists, perpetual/occasional/extra = 1 0 0
+  (1) pair coul/long, perpetual
+      attributes: half, newton on, omp
+      pair build: half/bin/atomonly/newton/omp
+      stencil: half/bin/3d/newton
+      bin: standard
+compute e all pe pair
+
+# run one time
+fix 1 all nvt temp 5000 5000 1
+run 1
+PPPM initialization ...
+  using 12-bit tables for long-range coulomb (src/kspace.cpp:328)
+  G vector (1/distance) = 0.2168
+  grid = 160 160 160
+  stencil order = 5
+  estimated absolute RMS force accuracy = 0.013737246
+  estimated relative force accuracy = 4.1369309e-05
+  using double precision FFTW3
+  3d grid and FFT values/proc = 5000211 4096000
+No /omp style for force computation currently active
+Per MPI rank memory allocation (min/avg/max) = 550.2 | 550.2 | 550.2 Mbytes
+Step E_coul E_long PotEng 
+       0    1471.7994   -4741.7284    -3269.929 
+       1    1454.9865   -4744.0366   -3289.0501 
+Loop time of 0.622648 on 12 procs for 1 steps with 200 atoms
+
+Performance: 0.139 ns/day, 172.958 hours/ns, 1.606 timesteps/s
+139.1% CPU use with 1 MPI tasks x 12 OpenMP threads
+
+MPI task timing breakdown:
+Section |  min time  |  avg time  |  max time  |%varavg| %total
+---------------------------------------------------------------
+Pair    | 0.00022554 | 0.00022554 | 0.00022554 |   0.0 |  0.04
+Kspace  | 0.59609    | 0.59609    | 0.59609    |   0.0 | 95.74
+Neigh   | 0          | 0          | 0          |   0.0 |  0.00
+Comm    | 9.667e-06  | 9.667e-06  | 9.667e-06  |   0.0 |  0.00
+Output  | 0.00016192 | 0.00016192 | 0.00016192 |   0.0 |  0.03
+Modify  | 0.02615    | 0.02615    | 0.02615    |   0.0 |  4.20
+Other   |            | 6.845e-06  |            |       |  0.00
+
+Nlocal:        200.000 ave         200 max         200 min
+Histogram: 1 0 0 0 0 0 0 0 0 0
+Nghost:        1554.00 ave        1554 max        1554 min
+Histogram: 1 0 0 0 0 0 0 0 0 0
+Neighs:        13066.0 ave       13066 max       13066 min
+Histogram: 1 0 0 0 0 0 0 0 0 0
+
+Total # of neighbors = 13066
+Ave neighs/atom = 65.330000
+Neighbor list builds = 0
+Dangerous builds = 0
+unfix 1
+
+Total wall time: 0:00:01
