@@ -1,13 +1,14 @@
-# input file to run the simulation
+# input file to run the simulation for 2D Ewald with correction
+# lmp -in in.input
 package omp 12 
 units real
 dimension 3
 processors * * *
-boundary p p p # periodic boundary condition
+boundary p p f # periodic boundary condition
 
 # read data 
 atom_style charge
-read_data poscar.data
+read_data exp1/out4.data
 
 # potential file
 include pot.mod
@@ -22,6 +23,6 @@ compute e all pe pair
 
 # run one time
 fix 1 all nvt temp 5000 5000 1
-run 1
+run 0
 unfix 1
 
