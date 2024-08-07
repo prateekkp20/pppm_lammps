@@ -4,23 +4,37 @@ from pathlib2 import Path
 import numpy as np
 import pandas as pd
 
-last = 10
+def replace_line_in_file(file_path, start_words, new_line):
+    with open(file_path, 'r') as file:
+        lines = file.readlines()
+
+    modified_lines = []
+    for line in lines:
+        if line.startswith(start_words):
+            modified_lines.append(new_line + '\n')
+        else:
+            modified_lines.append(line)
+
+    with open(file_path, 'w') as file:
+        file.writelines(modified_lines)
+
+last = 28
+Lx = np.zeros(last-1)
+Ly = np.zeros(last-1)
+Lz = np.zeros(last-1)
 E_coul = np.zeros(last-1)
 E_long = np.zeros(last-1)
 PotEng = np.zeros(last-1)
 
-input = "exp1box45/out"
+input = "changesize/output"
 outputfile = "terminal_lammps.txt"  
+lammps_file = "in.input"
+
 os.system(f"echo {input} Files Simulation Lammps Output > {outputfile}")
 os.system(f"echo  >> {outputfile}")
 
 for i in range(1,last):
-    search_txt = "read_data "+input+str(i-1)+".data"
-    replace_txt = "read_data "+input+str(i)+".data"
-    file = Path(r"in.input") 
-    data = file.read_text() 
-    data = data.replace(search_txt, replace_txt) 
-    file.write_text(data) 
+    replace_line_in_file(lammps_file,"read_data "+input,"read_data "+input+str(i)+".data")
 
     run_lammps = 'lmp -in in.input'
     os.system(f"{run_lammps} >> {outputfile}")
@@ -32,13 +46,6 @@ for i in range(1,last):
     E_long[i-1] = log.get("E_long")
     PotEng[i-1] = log.get("PotEng")
 
-    if i==last-1:
-        file = Path(r"in.input")
-        data = file.read_text() 
-        end = "read_data "+input+str(0)+".data"
-        data = data.replace(replace_txt, end)
-        file.write_text(data)
-
 os.system(f"rm {outputfile}")
 
 data ={
@@ -48,4 +55,4 @@ data ={
 }
 
 df= pd.DataFrame(data)
-df.to_csv("energy45.csv")
+# df.to_csv("energy45.csv")
